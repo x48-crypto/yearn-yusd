@@ -6,7 +6,9 @@ export const initialState = {
   vaults: [],
   connected: false,
   ready: false,
-  loading: {},
+  loading: {
+    balances: true,
+  },
   userTokens: [],
   tokens: [],
 };
@@ -29,7 +31,13 @@ const appReducer = (state = initialState, action) =>
         const oldToken = _.find(oldTokens, { address: newToken.address }) || {};
         const updatedToken = _.clone(oldToken);
         _.each(tokenKeys, key => {
-          updatedToken[key] = newToken[key];
+          let newVal = newToken[key];
+          if (key === 'decimals') {
+            if (typeof newVal === 'string') {
+              newVal = parseInt(newVal, 10);
+            }
+          }
+          updatedToken[key] = newVal;
         });
         return updatedToken;
       };
@@ -46,6 +54,7 @@ const appReducer = (state = initialState, action) =>
         [balanceUsdSort, balanceSort],
         ['desc', 'desc'],
       );
+
       draft.tokens = newTokens;
     };
 
@@ -67,10 +76,12 @@ const appReducer = (state = initialState, action) =>
         updateTokens(action.prices, ['priceUsd', 'balanceUsd']);
         break;
       }
-      case c.SELECT_TOKEN: {
+      case c.SELECT_TOKEN:
         draft.selectedToken = action.token;
         break;
-      }
+      case c.SELECT_VAULT:
+        draft.selectedVault = action.vault;
+        break;
       case c.VAULTS_LOADED:
         draft.vaults = action.vaults;
         break;
@@ -94,7 +105,7 @@ const appReducer = (state = initialState, action) =>
           'balanceNormalized',
           'decimals',
         ]);
-        draft.loading.tokens = false;
+        draft.loading.balances = false;
         break;
 
       case c.SHOW_CONNECTOR_MODAL:

@@ -9,6 +9,14 @@ export const select = key =>
     substate => substate[key],
   );
 
+export const selectSelectedToken = () =>
+  createSelector(
+    selectApp,
+    substate =>
+      JSON.parse(localStorage.getItem('selectedToken')) ||
+      substate.selectedToken,
+  );
+
 export const selectAccount = () =>
   createSelector(
     selectApp,

@@ -2,6 +2,8 @@ import React from 'react';
 import Web3 from 'web3';
 import ReactImageFallback from 'react-image-fallback';
 import ThinkingIcon from 'images/thinkingIcon.png';
+import EthereumIcon from 'images/ethereumIcon.png';
+import LoaderImg from 'images/loaderImg.gif';
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
@@ -18,8 +20,13 @@ const imageStyles = `
 
 export default function TokenIcon(props) {
   const { address, className } = props;
-  const tokenAddressChecksum = Web3.utils.toChecksumAddress(address);
-  const imageUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${tokenAddressChecksum}/logo.png`;
+  let imageUrl;
+  if (address === 'ethereum') {
+    imageUrl = EthereumIcon;
+  } else {
+    const tokenAddressChecksum = Web3.utils.toChecksumAddress(address);
+    imageUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${tokenAddressChecksum}/logo.png`;
+  }
 
   return (
     <Wrapper className={className}>
@@ -27,6 +34,7 @@ export default function TokenIcon(props) {
         className={className}
         css={imageStyles}
         src={imageUrl}
+        initialImage={LoaderImg}
         fallbackImage={ThinkingIcon}
       />
     </Wrapper>

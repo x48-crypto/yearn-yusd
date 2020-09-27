@@ -19,3 +19,4 @@ export const TOKEN_LIST_LOADED = 'TOKEN_LIST_LOADED';
 export const FETCH_TOKEN_LIST = 'FETCH_TOKEN_LIST';
 
 export const SELECT_TOKEN = 'SELECT_TOKEN';
+export const SELECT_VAULT = 'SELECT_VAULT';

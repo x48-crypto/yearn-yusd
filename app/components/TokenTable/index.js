@@ -12,6 +12,7 @@ const Row = styled.div`
   flex-direction: row;
   &:hover {
     background-color: #f0f5f9;
+    cursor: pointer;
   }
 `;
 

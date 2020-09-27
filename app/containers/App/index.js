@@ -10,6 +10,7 @@ import transactionsSaga from 'containers/App/sagas/transactionsSaga';
 import vaultsSaga from 'containers/App/sagas/vaultsSaga';
 import tokenListSaga from 'containers/App/sagas/tokenListSaga';
 import tokenBalancesSaga from 'containers/App/sagas/tokenBalancesSaga';
+import selectedTokenSaga from 'containers/App/sagas/selectedTokenSaga';
 import reducer from 'containers/App/reducer';
 import * as a from 'containers/App/actions';
 
@@ -18,8 +19,9 @@ export default function App() {
   useInjectSaga({ key: 'pricesSaga', saga: pricesSaga });
   useInjectSaga({ key: 'transactionsSaga', saga: transactionsSaga });
   useInjectSaga({ key: 'vaultsSaga', saga: vaultsSaga });
-  useInjectSaga({ key: 'tokenListSaga', saga: tokenListSaga });
+  // useInjectSaga({ key: 'tokenListSaga', saga: tokenListSaga });
   useInjectSaga({ key: 'tokenBalancesSaga', saga: tokenBalancesSaga });
+  useInjectSaga({ key: 'selectedTokenSaga', saga: selectedTokenSaga });
 
   const dispatch = useDispatch();
   const init = () => {

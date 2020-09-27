@@ -85,3 +85,10 @@ export function selectToken(token) {
     token,
   };
 }
+
+export function selectVault(vault) {
+  return {
+    type: c.SELECT_VAULT,
+    vault,
+  };
+}

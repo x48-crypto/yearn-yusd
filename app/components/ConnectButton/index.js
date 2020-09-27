@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
+import Button from 'components/Button';
 import * as a from 'containers/App/actions';
 
 const ButtonWrap = styled.div`
@@ -8,20 +9,6 @@ const ButtonWrap = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-`;
-
-const Button = styled.button`
-  white-space: nowrap;
-  margin: 10px;
-  padding: 5px;
-  &:focus {
-    outline: 0;
-  }
-  background-color: transparent;
-  border-radius: 50px;
-  padding: 10px 24px;
-  border: 2px solid rgba(47, 128, 237, 0.7);
-  color: rgba(47, 128, 237, 0.7);
 `;
 
 export default function ConnectButton() {

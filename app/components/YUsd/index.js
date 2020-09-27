@@ -10,16 +10,11 @@ const Wrapper = styled.div`
   align-items: center;
 `;
 
-const PartyWrapper = styled.div`
-  font-size: 20px;
-`;
-
 const Header = styled.div``;
 
 export default function() {
   return (
     <Wrapper>
-      <PartyWrapper>🥳</PartyWrapper>
       <Header>Deposit and earn.</Header>
       <EarningsCounter />
       <Exchange />

@@ -2,20 +2,30 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Wrapper = styled.button`
-  width: 150px;
-  margin: 10px;
+  margin: 7px 0px;
   padding: 5px;
   background-color: transparent;
   text-transform: uppercase;
-  border-radius: 50px;
+  border-radius: 13px;
   padding: 10px 24px;
-  border: 2px solid rgba(47, 128, 237, 0.7);
-  color: rgba(47, 128, 237, 0.7);
+  border: 2px solid #2f80ed;
+  color: #2f80ed;
+  white-space: nowrap;
   &:focus {
     outline: 0 !important;
   }
+  &:hover {
+    background-color: #2f80ed;
+    color: #fff;
+  }
+  font-size: 17px;
 `;
 
 export default function ConnectButton(props) {
-  return <Wrapper type="button">{props.children}</Wrapper>;
+  const { onClick } = props;
+  return (
+    <Wrapper type="button" onClick={onClick}>
+      {props.children}
+    </Wrapper>
+  );
 }

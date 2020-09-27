@@ -2,7 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import Button from 'components/Button';
 import TokenPicker from 'components/TokenPicker';
-import ValueWithLabel from 'components/ValueWithLabel';
+import { useSelector } from 'react-redux';
+import * as s from 'containers/App/selectors';
 
 const Wrapper = styled.div`
   display: flex;
@@ -21,19 +22,18 @@ const Middle = styled.div`
 `;
 
 export default function() {
-  const yUsdAddress = '0x5dbcF33D8c2E976c6b560249878e6F1491Bca25c';
-
+  const selectedToken = useSelector(s.selectSelectedToken());
   return (
     <Wrapper>
       <Left>
-        <TokenPicker />
+        <TokenPicker selectedToken={selectedToken} />
       </Left>
       <Middle>
         <Button>Deposit</Button>
         <Button>Withdraw</Button>
       </Middle>
       <Right>
-        <TokenPicker yUsd address={yUsdAddress} />
+        <TokenPicker immutable token={selectedToken} />
       </Right>
     </Wrapper>
   );

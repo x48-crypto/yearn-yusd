@@ -8,7 +8,6 @@ import * as c from '../constants';
 export function* getPrices() {
   const userTokens = yield r.select(s.select('userTokens'));
   const tokens = yield r.select(s.select('tokens'));
-
   const injectPrice = (token, prices) => {
     const priceUsd = _.get(prices, `${token.address}.usd`);
     const { balanceNormalized } = token;
@@ -21,27 +20,15 @@ export function* getPrices() {
 
   try {
     const tokenAddresses = _.map(userTokens, token => token.address);
-    const url = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddresses}&vs_currencies=usd`;
+    const url = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddresses},0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8&vs_currencies=usd`;
     const prices = yield r.call(request, url);
+
     const tokensWithPrice = _.map(
       tokens,
       token => injectPrice(token, prices),
       [],
     );
-    const selectedToken = yield r.select(s.select('selectedToken'));
-    if (!selectedToken) {
-      const balanceUsdSort = token => token.balanceUsd || 0;
-      const largestBalance = _.first(
-        _.orderBy(tokensWithPrice, [balanceUsdSort], ['desc']),
-      );
-      const largestBalanceToken = _.find(
-        tokens,
-        token =>
-          token.address.toLowerCase() === largestBalance.address.toLowerCase(),
-      );
 
-      yield r.put(a.selectToken(largestBalanceToken));
-    }
     yield r.put(a.pricesLoaded(tokensWithPrice));
   } catch (err) {
     console.log('Error reading prices', err);

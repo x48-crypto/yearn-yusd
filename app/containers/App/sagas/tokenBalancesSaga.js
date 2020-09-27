@@ -1,4 +1,5 @@
 import erc20Abi from 'abi/erc20.json';
+import vaultAbi from 'abi/vaultV4.json';
 import Web3 from 'web3';
 import BigNumber from 'bignumber.js';
 import * as r from 'redux-saga/effects';
@@ -16,26 +17,47 @@ function readBalanceFromContract(contract, account) {
   return contract.methods.balanceOf(account).call();
 }
 
-function getEthBalance(library, account) {
-  return library.getBalance(account);
+function* getEthBalance(library, account) {
+  return yield library.getBalance(account);
 }
 
+const ethAddress = 'ethereum';
+
 function* fetchAccountBalance(token, web3, account, library) {
-  const { address, id } = token;
-  if (id === 'ethereum') {
-    let ethBalance;
-    try {
-      ethBalance = yield getEthBalance(library, account);
-    } catch (err) {
-      console.log('Err reading eth balance: ', err);
-    }
-    return { ...token, balance: ethBalance.toString() };
-  }
+  const { address } = token;
   let balance;
+  let balanceNormalized;
   let name;
   let symbol;
   let decimals;
-  let balanceNormalized;
+  const tokenIsVault = token.vault;
+  if (tokenIsVault) {
+    const vaultContract = new web3.eth.Contract(vaultAbi, address);
+    let shares;
+    try {
+      balance = yield vaultContract.methods.balanceOf(account).call();
+      const pricePerFullShare = yield vaultContract.methods
+        .getPricePerFullShare()
+        .call();
+      const priceRatio = new BigNumber(pricePerFullShare)
+        .dividedBy(10 ** 18)
+        .toFixed();
+      shares = new BigNumber(balance).times(priceRatio).toFixed();
+      balanceNormalized = new BigNumber(balance).dividedBy(10 ** 18).toFixed();
+    } catch (err) {
+      console.log('Err reading vault balance: ', err);
+    }
+    return { ...token, balance, shares, balanceNormalized };
+  }
+  if (address === ethAddress) {
+    try {
+      balance = yield getEthBalance(library, account);
+      balanceNormalized = new BigNumber(balance).dividedBy(10 ** 18).toFixed();
+    } catch (err) {
+      console.log('Err reading eth balance: ', err);
+    }
+    return { ...token, balance, balanceNormalized };
+  }
   try {
     const contract = new web3.eth.Contract(erc20Abi, address);
     balance = yield readBalanceFromContract(contract, account);
@@ -79,11 +101,14 @@ export function* fetchAccountBalances() {
 export function* readBalances() {
   try {
     const balances = yield fetchAccountBalances();
+    const yUsdVault = _.find(balances, {
+      address: '0x5dbcF33D8c2E976c6b560249878e6F1491Bca25c'.toLowerCase(),
+    });
+    yield r.put(a.selectVault(yUsdVault));
     yield r.put(a.tokenBalancesLoaded(balances));
   } catch (err) {
     console.log('Error reading balances', err);
   }
-  console.log('Wallet loaded');
   yield r.delay(pollPeriod);
 }
 

@@ -55,6 +55,7 @@ export default function ConnectModal(props) {
   const removeVaults = token => !token.vault;
   const filterTokens = token =>
     token.symbol.toLowerCase().startsWith(filter.toLowerCase());
+
   const filteredTokens = _.chain(tokens)
     .filter(removeVaults)
     .filter(filterTokens)

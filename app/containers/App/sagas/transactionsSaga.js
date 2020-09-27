@@ -47,7 +47,9 @@ export function* poll() {
         return acc;
       };
       const newTokens = _.reduce(transactionsByToken, addToken, []);
-      yield r.put(a.userTokensLoaded(newTokens));
+      const ethToken = { address: 'ethereum', symbol: 'ETH' };
+      const newTokensWithEth = [...newTokens, ethToken];
+      yield r.put(a.userTokensLoaded(newTokensWithEth));
     } catch (err) {
       console.log('Error reading transactions', err);
     }
