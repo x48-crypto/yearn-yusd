@@ -15,6 +15,22 @@ body {
   font-family: 'MonospaceNew';
 }
 
+.tokenPickerModal {
+  max-width: 600px;
+}
+
+.tokenPickerModal .modal-content {
+  width: 600px;
+  height: 600px;
+  max-height: 90vh;
+  padding: 32px 22px;
+  overflow: hidden;
+}
+
+.tokenPickerModal .modal-body {
+  padding: 0px;
+}
+
 .identicon {
   border-radius: 50px;
 }

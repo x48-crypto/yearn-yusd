@@ -19,9 +19,36 @@ export function connectionUpdated(library, chainId, active) {
   };
 }
 
-export function startLoadingVaults() {
+export function startLoadingUserTokens() {
   return {
-    type: c.START_LOADING_VAULTS,
+    type: c.START_LOADING_USER_TOKENS,
+  };
+}
+
+export function userTokensLoaded(tokens) {
+  return {
+    type: c.USER_TOKENS_LOADED,
+    tokens,
+  };
+}
+
+export function tokenBalancesLoaded(tokens) {
+  return {
+    type: c.TOKEN_BALANCES_LOADED,
+    tokens,
+  };
+}
+
+export function fetchTokenList() {
+  return {
+    type: c.FETCH_TOKEN_LIST,
+  };
+}
+
+export function tokenListLoaded(tokenList) {
+  return {
+    type: c.TOKEN_LIST_LOADED,
+    tokenList,
   };
 }
 
@@ -38,10 +65,10 @@ export function startLoadingPrices() {
   };
 }
 
-export function pricesLoaded(vaults) {
+export function pricesLoaded(prices) {
   return {
     type: c.PRICES_LOADED,
-    vaults,
+    prices,
   };
 }
 
@@ -49,5 +76,12 @@ export function showConnectorModal(showModal) {
   return {
     type: c.SHOW_CONNECTOR_MODAL,
     showModal,
+  };
+}
+
+export function selectToken(token) {
+  return {
+    type: c.SELECT_TOKEN,
+    token,
   };
 }

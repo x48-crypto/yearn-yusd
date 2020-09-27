@@ -5,6 +5,9 @@ const Wrapper = styled.div`
   font-weight: bold;
   text-align: center;
   width: 350px;
+  &:hover {
+    background-color: #f0f5f9;
+  }
   font-size: ${props => (props.big ? '24px' : '24px')};
 `;
 
@@ -51,14 +54,13 @@ const Amounts = styled.div`
 `;
 
 export default function Pair(props) {
-  const { label, big, value } = props;
+  const { label, big, value, onClick } = props;
   let amount = <Input placeholder="Amount" />;
 
   return (
-    <Wrapper>
+    <Wrapper onClick={onClick}>
       <Label big={big}>{label}</Label>
       <Value>{value}</Value>
-
       <Amounts>
         {amount}
         <AmountUsd>$2,234.53466</AmountUsd>

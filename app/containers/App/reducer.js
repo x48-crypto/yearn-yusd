@@ -1,5 +1,4 @@
 import produce from 'immer';
-import BigNumber from 'bignumber.js';
 import * as c from './constants';
 
 // The initial state of the App
@@ -7,99 +6,47 @@ export const initialState = {
   vaults: [],
   connected: false,
   ready: false,
-  loading: {
-    vaultPrices: true,
-    vaults: true,
-  },
-  totals: {
-    totalVaultEarningsUsd: 0,
-    totalDepositedAmountUsd: 0,
-    aggregateApy: 0,
-  },
-};
-
-const mergeByAddress = (oldData, newData) => {
-  const mergedData = _.merge(
-    _.keyBy(oldData, 'address'),
-    _.keyBy(newData, 'address'),
-  );
-  return mergedData;
+  loading: {},
+  userTokens: [],
+  tokens: [],
 };
 
 /* eslint-disable default-case, no-param-reassign */
 const appReducer = (state = initialState, action) =>
   produce(state, draft => {
-    const getTotalDepositedUsd = (acc, vault) => {
-      const { depositedAmountUsd } = vault;
-      if (depositedAmountUsd) {
-        acc = acc.plus(depositedAmountUsd);
-      }
-      return acc;
-    };
-
-    const addEarningsAndDepositsUsd = vault => {
-      const { priceUsd, earnings, depositedAmount } = vault;
-      if (priceUsd && earnings) {
-        vault.earningsUsd = new BigNumber(earnings).times(priceUsd).toFixed();
-      }
-      if (priceUsd && depositedAmount) {
-        vault.depositedAmountUsd = new BigNumber(depositedAmount)
-          .dividedBy(10 ** 18)
-          .times(priceUsd)
-          .toFixed();
-      }
-      return vault;
-    };
-
-    const getAggregateApy = (acc, vault, totalDepositedAmountUsd) => {
-      const { depositedAmountUsd, apyOneWeekSample } = vault;
-      let ratio;
-      if (totalDepositedAmountUsd !== '0') {
-        ratio = depositedAmountUsd / totalDepositedAmountUsd;
-      } else {
-        // divide by zero
-        ratio = 1;
-      }
-      const weightedApy = ratio * parseFloat(apyOneWeekSample);
-      acc += weightedApy;
-      return acc;
-    };
-
-    const addEarnings = vaults => {
-      const newVaults = _.map(vaults, addEarningsAndDepositsUsd);
-
-      const totalDepositedAmountUsd = _.reduce(
-        newVaults,
-        getTotalDepositedUsd,
-        new BigNumber(0),
-      ).toFixed();
-
-      const aggregateApy = _.reduce(
-        newVaults,
-        (acc, vault) => getAggregateApy(acc, vault, totalDepositedAmountUsd),
-        0,
+    // Utility functions
+    const updateTokens = (tokensToUpdate, tokenKeys) => {
+      const oldTokens = state.tokens || [];
+      const lowercaseAddress = token => {
+        token.address = token.address.toLowerCase();
+        return token;
+      };
+      const tokensToUpdateLowercaseAddress = _.map(
+        tokensToUpdate,
+        lowercaseAddress,
       );
-
-      const getTotalVaultEarningsUsd = (acc, vault) => {
-        const { earningsUsd } = vault;
-        if (!earningsUsd) {
-          return acc;
-        }
-        acc = acc.plus(earningsUsd);
-        return acc;
+      const updateToken = newToken => {
+        const oldToken = _.find(oldTokens, { address: newToken.address }) || {};
+        const updatedToken = _.clone(oldToken);
+        _.each(tokenKeys, key => {
+          updatedToken[key] = newToken[key];
+        });
+        return updatedToken;
       };
-
-      const totalVaultEarningsUsd = _.reduce(
-        vaults,
-        getTotalVaultEarningsUsd,
-        new BigNumber(0),
-      ).toNumber();
-
-      draft.totals = {
-        totalVaultEarningsUsd,
-        totalDepositedAmountUsd,
-        aggregateApy,
-      };
+      const updatedTokens = _.map(tokensToUpdateLowercaseAddress, updateToken);
+      const merged = _.merge(
+        _.keyBy(oldTokens, 'address'),
+        _.keyBy(updatedTokens, 'address'),
+      );
+      const balanceUsdSort = token => token.balanceUsd || 0;
+      const balanceSort = token => token.balance || 0;
+      let newTokens = _.values(merged);
+      newTokens = _.orderBy(
+        newTokens,
+        [balanceUsdSort, balanceSort],
+        ['desc', 'desc'],
+      );
+      draft.tokens = newTokens;
     };
 
     switch (action.type) {
@@ -117,23 +64,39 @@ const appReducer = (state = initialState, action) =>
         draft.connected = action.active;
         break;
       case c.PRICES_LOADED: {
-        const oldVaults = state.vaults;
-        const updatedVaults = action.vaults;
-        const mergedVaults = mergeByAddress(oldVaults, updatedVaults);
-        draft.vaults = mergedVaults;
-        addEarnings(mergedVaults);
-        draft.loading.vaultPrices = false;
+        updateTokens(action.prices, ['priceUsd', 'balanceUsd']);
         break;
       }
-      case c.VAULTS_LOADED: {
-        const oldVaults = _.clone(state.vaults);
-        const updatedVaults = action.vaults;
-        const mergedVaults = mergeByAddress(oldVaults, updatedVaults);
-        addEarnings(mergedVaults);
-        draft.vaults = mergedVaults;
-        draft.loading.vaults = false;
+      case c.SELECT_TOKEN: {
+        draft.selectedToken = action.token;
         break;
       }
+      case c.VAULTS_LOADED:
+        draft.vaults = action.vaults;
+        break;
+      case c.USER_TOKENS_LOADED: {
+        draft.userTokens = action.tokens;
+        updateTokens(action.tokens, ['address', 'name', 'symbol', 'vault']);
+        break;
+      }
+      case c.TOKEN_LIST_LOADED:
+        updateTokens(action.tokenList, [
+          'symbol',
+          'decimals',
+          'logoURI',
+          'name',
+          'address',
+        ]);
+        break;
+      case c.TOKEN_BALANCES_LOADED:
+        updateTokens(action.tokens, [
+          'balance',
+          'balanceNormalized',
+          'decimals',
+        ]);
+        draft.loading.tokens = false;
+        break;
+
       case c.SHOW_CONNECTOR_MODAL:
         draft.showConnectorModal = action.showModal;
         break;

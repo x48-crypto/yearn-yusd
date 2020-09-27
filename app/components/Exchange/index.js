@@ -21,6 +21,8 @@ const Middle = styled.div`
 `;
 
 export default function() {
+  const yUsdAddress = '0x5dbcF33D8c2E976c6b560249878e6F1491Bca25c';
+
   return (
     <Wrapper>
       <Left>
@@ -31,7 +33,7 @@ export default function() {
         <Button>Withdraw</Button>
       </Middle>
       <Right>
-        <ValueWithLabel value="😍" label="yUSD" />
+        <TokenPicker yUsd address={yUsdAddress} />
       </Right>
     </Wrapper>
   );

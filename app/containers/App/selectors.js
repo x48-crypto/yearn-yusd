@@ -3,6 +3,12 @@ import { initialState } from './reducer';
 
 const selectApp = state => state.app || initialState;
 
+export const select = key =>
+  createSelector(
+    selectApp,
+    substate => substate[key],
+  );
+
 export const selectAccount = () =>
   createSelector(
     selectApp,
@@ -13,12 +19,6 @@ export const selectLoading = () =>
   createSelector(
     selectApp,
     substate => substate.loading,
-  );
-
-export const selectContract = () =>
-  createSelector(
-    selectApp,
-    substate => substate.contract,
   );
 
 export const selectConnected = () =>
@@ -37,10 +37,4 @@ export const selectVaults = () =>
   createSelector(
     selectApp,
     substate => substate.vaults,
-  );
-
-export const selectTotals = () =>
-  createSelector(
-    selectApp,
-    substate => substate.totals,
   );

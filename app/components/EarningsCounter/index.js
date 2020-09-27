@@ -56,10 +56,7 @@ export default function() {
       <Earnings>
         <EarningsLabel>YOUR EARNINGS</EarningsLabel>
         <EarningsText>
-          <span role="img" aria-label="party">
-            🥳
-          </span>
-          {'  '}$
+          $
           <CountUp
             start={totalVaultEarningsUsd}
             end={futureAmount}
@@ -67,19 +64,11 @@ export default function() {
             separator=","
             useEasing={false}
             decimals={8}
-          />{' '}
-          <span role="img" aria-label="party">
-            🥳
-          </span>
+          />
         </EarningsText>
         <Disclaimer>
-          Price estimate based on aggregate APY of{' '}
-          <b>{aggregateApy.toFixed(4)}%</b> on{' '}
-          <b>{currencyTransform(parseFloat(totalDepositedAmountUsd))}</b> -{' '}
-          {currencyTransform(parseFloat(futureEarningsPerHour * 24))}
-          /day
-          <br />
-          If you refresh the page too quickly your earnings will reset.
+          Earning <b>{aggregateApy.toFixed(2)}% APR </b> on{' '}
+          <b>{currencyTransform(parseFloat(totalDepositedAmountUsd))}</b>
         </Disclaimer>
       </Earnings>
     </Wrapper>

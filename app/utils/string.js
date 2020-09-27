@@ -39,10 +39,16 @@ export const currencyTransform = (val, digits) => {
   return newVal;
 };
 
-export const balanceTransform = val => {
+export const balanceTransform = (val, decimals, digits) => {
+  let newDecimals = decimals;
+  if (!decimals) {
+    newDecimals = 18;
+  }
   if (Number.isNaN(val)) {
     return null;
   }
-  const newVal = new BigNumber(val).dividedBy(10 ** 18).toFixed();
+  const newVal = new BigNumber(val)
+    .dividedBy(10 ** newDecimals)
+    .toFixed(digits || 18);
   return newVal;
 };
