@@ -13,8 +13,22 @@ export const selectSelectedToken = () =>
   createSelector(
     selectApp,
     substate =>
-      JSON.parse(localStorage.getItem('selectedToken')) ||
-      substate.selectedToken || { address: 'ethereum', symbol: 'ETH' },
+      substate.selectedToken ||
+      JSON.parse(localStorage.getItem('selectedToken')) || {
+        address: 'ethereum',
+        symbol: 'ETH',
+      },
+  );
+
+export const selectSelectedVault = () =>
+  createSelector(
+    selectApp,
+    substate =>
+      substate.selectedVault ||
+      JSON.parse(localStorage.getItem('selectedVault')) || {
+        address: '0x5dbcF33D8c2E976c6b560249878e6F1491Bca25c',
+        symbol: 'yUSD',
+      },
   );
 
 export const selectAccount = () =>

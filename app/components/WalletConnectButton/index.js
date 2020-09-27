@@ -9,6 +9,7 @@ import Torus from './torus.jpg';
 
 const Wrapper = styled.button`
   width: 250px;
+  max-width: 250px;
   height: 55px;
   background-color: #fff;
   display: flex;

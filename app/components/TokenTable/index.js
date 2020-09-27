@@ -74,12 +74,12 @@ export default function(props) {
   const renderToken = token => {
     const balance =
       token.balance && balanceTransform(token.balance, token.decimals);
-    const selectToken = () => {
-      dispatch(a.selectToken(token));
+    const setToken = () => {
+      dispatch(a.setToken(token));
       onHide();
     };
     return (
-      <Row key={token.address} onClick={selectToken}>
+      <Row key={token.address} onClick={setToken}>
         <Column title={token.address}>
           <TokenIcon address={token.address} />
           <TokenSymbol>{token.symbol}</TokenSymbol>

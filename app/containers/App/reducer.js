@@ -1,4 +1,5 @@
 import produce from 'immer';
+import { getVaultWithAlias } from 'utils/vaults';
 import * as c from './constants';
 
 // The initial state of the App
@@ -76,11 +77,18 @@ const appReducer = (state = initialState, action) =>
         updateTokens(action.prices, ['priceUsd', 'balanceUsd']);
         break;
       }
-      case c.SELECT_TOKEN:
+      case c.SET_TOKEN:
         draft.selectedToken = action.token;
         break;
-      case c.SELECT_VAULT:
-        draft.selectedVault = action.vault;
+      case c.SET_VAULT:
+        const vaultWithAlias = getVaultWithAlias(action.vault);
+        draft.selectedVault = vaultWithAlias;
+        break;
+      case c.SET_DEPOSIT_AMOUNT:
+        draft.depositAmount = action.amount;
+        break;
+      case c.SET_WITHDRAWAL_AMOUNT:
+        draft.withdrawalAmount = action.amount;
         break;
       case c.VAULTS_LOADED:
         draft.vaults = action.vaults;

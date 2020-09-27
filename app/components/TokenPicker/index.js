@@ -3,8 +3,10 @@ import styled from 'styled-components';
 import TokenPickerModal from 'components/TokenPickerModal';
 import TokenIconAndName from 'components/TokenIconAndName';
 import { balanceTransform } from 'utils/string';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import BigNumber from 'bignumber.js';
 import * as s from 'containers/App/selectors';
+import * as a from 'containers/App/actions';
 
 const Input = styled.input`
   width: 220px;
@@ -48,23 +50,20 @@ const Wrapper = styled.div`
 `;
 
 export default function(props) {
-  const { immutable, selectedToken } = props;
+  const { immutable, selectedToken: selectedTokenOriginal } = props;
   const [showTokenPickerModal, setShowTokenPickerModal] = useState(false);
+  const [amount, setAmount] = useState('0.00');
   const openTokenPickerModal = () => setShowTokenPickerModal(true);
   const closeTokenPickerModal = () => setShowTokenPickerModal(false);
-
-  const selectedVault = useSelector(s.select('selectedVault'));
+  const dispatch = useDispatch();
+  const selectedVault = useSelector(s.selectSelectedVault());
   const loadingBalances = useSelector(s.select('loading')).balances;
 
-  let newSelectedToken = selectedToken;
+  let selectedToken = selectedTokenOriginal;
   if (immutable) {
-    newSelectedToken = {
-      address: '0x5dbcF33D8c2E976c6b560249878e6F1491Bca25c',
-      ...selectedVault,
-      symbol: 'yUSD',
-    };
+    selectedToken = selectedVault;
   }
-  const { symbol } = newSelectedToken;
+  const { symbol, balance, balanceNormalized, decimals } = selectedToken;
 
   const clickToken = () => {
     if (!immutable) {
@@ -73,45 +72,61 @@ export default function(props) {
   };
 
   let truncatedBalance;
-  const { balance } = newSelectedToken;
   if (loadingBalances) {
     truncatedBalance = 'Loading...';
   } else if (balance) {
-    truncatedBalance = `${balanceTransform(
-      balance,
-      newSelectedToken.decimals,
-      4,
-    )} ${symbol}`;
+    truncatedBalance = `${balanceTransform(balance, decimals, 4)} ${symbol}`;
   } else {
     truncatedBalance = `0.00 ${symbol}`;
   }
 
-  const setAmount = percentage => {
-    if (immutable) {
-      console.log('withdraw');
+  const setAmountWithPercent = percentage => {
+    if (!balance) {
       return;
     }
-    console.log('dep');
-    console.log('prer', percentage);
+    const newAmount = new BigNumber(balance).times(percentage).toFixed(0);
+    const newAmountNormalized = new BigNumber(balanceNormalized)
+      .times(percentage)
+      .toFixed(8);
+
+    setAmount(newAmountNormalized);
+    if (immutable) {
+      dispatch(a.setWithdrawalAmount(newAmount));
+    } else {
+      dispatch(a.setDepositAmount(newAmount));
+    }
   };
 
   return (
     <Wrapper>
       <TokenIconAndName
         immutable={immutable}
-        token={newSelectedToken}
+        token={selectedToken}
         onClick={clickToken}
       />
       <Amounts>
         <Balance>
           <b>Balance:</b> {truncatedBalance}
         </Balance>
-        <Input placeholder="0.00" />
+        <Input
+          placeholder="0.00"
+          value={amount}
+          type="text"
+          onChange={evt => setAmount(evt.target.value)}
+        />
         <AmountButtons>
-          <AmountButton onClick={() => setAmount(0)}>0%</AmountButton>
-          <AmountButton onClick={() => setAmount(0.25)}>25%</AmountButton>
-          <AmountButton onClick={() => setAmount(0.75)}>50%</AmountButton>
-          <AmountButton onClick={() => setAmount(1)}>100%</AmountButton>
+          <AmountButton onClick={() => setAmountWithPercent(0)}>
+            0%
+          </AmountButton>
+          <AmountButton onClick={() => setAmountWithPercent(0.25)}>
+            25%
+          </AmountButton>
+          <AmountButton onClick={() => setAmountWithPercent(0.5)}>
+            50%
+          </AmountButton>
+          <AmountButton onClick={() => setAmountWithPercent(1)}>
+            100%
+          </AmountButton>
         </AmountButtons>
       </Amounts>
 

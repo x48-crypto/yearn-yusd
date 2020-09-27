@@ -79,16 +79,44 @@ export function showConnectorModal(showModal) {
   };
 }
 
-export function selectToken(token) {
+export function setToken(token) {
   return {
-    type: c.SELECT_TOKEN,
+    type: c.SET_TOKEN,
     token,
   };
 }
 
-export function selectVault(vault) {
+export function setVault(vault) {
   return {
-    type: c.SELECT_VAULT,
+    type: c.SET_VAULT,
     vault,
+  };
+}
+
+export function setDepositAmount(amount) {
+  return {
+    type: c.SET_DEPOSIT_AMOUNT,
+    amount,
+  };
+}
+
+export function setWithdrawalAmount(amount) {
+  return {
+    type: c.SET_WITHDRAWAL_AMOUNT,
+    amount,
+  };
+}
+
+export function setExchangeRate(rate) {
+  return {
+    type: c.SET_EXCHANGE_RATE,
+    rate,
+  };
+}
+
+export function updatePrices(tokens) {
+  return {
+    type: c.UPDATE_PRICES,
+    tokens,
   };
 }

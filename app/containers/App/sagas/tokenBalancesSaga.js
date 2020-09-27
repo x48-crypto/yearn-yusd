@@ -109,8 +109,10 @@ export function* readBalances() {
     const newSelectedToken = _.find(balances, {
       address: selectedToken.address,
     });
-    yield r.put(a.selectToken(newSelectedToken));
-    yield r.put(a.selectVault(yUsdVault));
+    if (newSelectedToken) {
+      yield r.put(a.setToken(newSelectedToken));
+    }
+    yield r.put(a.setVault(yUsdVault));
     yield r.put(a.tokenBalancesLoaded(balances));
   } catch (err) {
     console.log('Error reading balances', err);

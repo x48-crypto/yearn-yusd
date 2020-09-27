@@ -5,8 +5,25 @@ import * as s from '../selectors';
 import * as a from '../actions';
 import * as c from '../constants';
 
-export function* getPrices() {
-  const userTokens = yield r.select(s.select('userTokens'));
+export function* updatePrices(action) {
+  const newTokens = action.tokens;
+  const oldTokens = yield r.select(s.select('userTokens'));
+  const tokensToUpdate = oldTokens;
+  const nbrNewTokens = _.size(newTokens);
+  if (nbrNewTokens > 0) {
+    const insertTokenIfMissing = token => {
+      const foundToken = _.find(
+        oldTokens,
+        oldToken =>
+          oldToken.address.toLowerCase() === token.address.toLowerCase(),
+      );
+      if (!foundToken) {
+        tokensToUpdate.push(token);
+      }
+    };
+    _.each(newTokens, insertTokenIfMissing);
+  }
+
   const tokens = yield r.select(s.select('tokens'));
   const injectPrice = (token, prices) => {
     const priceUsd = _.get(prices, `${token.address}.usd`);
@@ -19,7 +36,7 @@ export function* getPrices() {
   };
 
   try {
-    const tokenAddresses = _.map(userTokens, token => token.address);
+    const tokenAddresses = _.map(tokensToUpdate, token => token.address);
     const pricesUrl = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddresses},0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8&vs_currencies=usd`;
     const ethPriceUrl =
       'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd';
@@ -46,6 +63,11 @@ export function* startLoadingPrices() {
   yield r.put(a.startLoadingPrices());
 }
 
+export function* updateBalancePrices() {
+  yield r.put(a.updatePrices());
+}
+
 export default function* initialize() {
-  yield r.takeLatest(c.TOKEN_BALANCES_LOADED, getPrices);
+  yield r.takeLatest(c.TOKEN_BALANCES_LOADED, updateBalancePrices);
+  yield r.takeLatest(c.UPDATE_PRICES, updatePrices);
 }
