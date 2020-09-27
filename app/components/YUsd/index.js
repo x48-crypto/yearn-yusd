@@ -10,12 +10,14 @@ const Wrapper = styled.div`
   align-items: center;
 `;
 
-const Header = styled.div``;
+const Header = styled.div`
+  margin-bottom: 20px;
+`;
 
 export default function() {
   return (
     <Wrapper>
-      <Header>Deposit and earn.</Header>
+      <Header>Deposit and earn. Simple.</Header>
       <EarningsCounter />
       <Exchange />
     </Wrapper>

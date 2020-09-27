@@ -63,14 +63,8 @@ export default function(props) {
       ...selectedVault,
       symbol: 'yUSD',
     };
-  } else if (!selectedToken) {
-    newSelectedToken = {
-      address: 'ethereum',
-      symbol: 'ETH',
-    };
   }
-
-  const symbol = newSelectedToken.symbol;
+  const { symbol } = newSelectedToken;
 
   const clickToken = () => {
     if (!immutable) {
@@ -92,6 +86,15 @@ export default function(props) {
     truncatedBalance = `0.00 ${symbol}`;
   }
 
+  const setAmount = percentage => {
+    if (immutable) {
+      console.log('withdraw');
+      return;
+    }
+    console.log('dep');
+    console.log('prer', percentage);
+  };
+
   return (
     <Wrapper>
       <TokenIconAndName
@@ -105,10 +108,10 @@ export default function(props) {
         </Balance>
         <Input placeholder="0.00" />
         <AmountButtons>
-          <AmountButton>0%</AmountButton>
-          <AmountButton>25%</AmountButton>
-          <AmountButton>50%</AmountButton>
-          <AmountButton>100%</AmountButton>
+          <AmountButton onClick={() => setAmount(0)}>0%</AmountButton>
+          <AmountButton onClick={() => setAmount(0.25)}>25%</AmountButton>
+          <AmountButton onClick={() => setAmount(0.75)}>50%</AmountButton>
+          <AmountButton onClick={() => setAmount(1)}>100%</AmountButton>
         </AmountButtons>
       </Amounts>
 

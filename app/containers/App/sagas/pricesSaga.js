@@ -20,16 +20,23 @@ export function* getPrices() {
 
   try {
     const tokenAddresses = _.map(userTokens, token => token.address);
-    const url = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddresses},0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8&vs_currencies=usd`;
-    const prices = yield r.call(request, url);
+    const pricesUrl = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddresses},0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8&vs_currencies=usd`;
+    const ethPriceUrl =
+      'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd';
+
+    const prices = yield r.call(request, pricesUrl);
+    const ethPrice = yield r.call(request, ethPriceUrl);
 
     const tokensWithPrice = _.map(
       tokens,
       token => injectPrice(token, prices),
       [],
     );
+    const ethToken = _.find(tokens, { symbol: 'ETH' });
+    const ethTokenWithPrice = injectPrice(ethToken, ethPrice);
+    const tokensWithAllPrices = [...tokensWithPrice, ethTokenWithPrice];
 
-    yield r.put(a.pricesLoaded(tokensWithPrice));
+    yield r.put(a.pricesLoaded(tokensWithAllPrices));
   } catch (err) {
     console.log('Error reading prices', err);
   }

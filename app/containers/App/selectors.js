@@ -14,7 +14,7 @@ export const selectSelectedToken = () =>
     selectApp,
     substate =>
       JSON.parse(localStorage.getItem('selectedToken')) ||
-      substate.selectedToken,
+      substate.selectedToken || { address: 'ethereum', symbol: 'ETH' },
   );
 
 export const selectAccount = () =>

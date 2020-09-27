@@ -51,11 +51,12 @@ function* fetchAccountBalance(token, web3, account, library) {
   }
   if (address === ethAddress) {
     try {
-      balance = yield getEthBalance(library, account);
+      balance = new BigNumber(yield getEthBalance(library, account)).toFixed();
       balanceNormalized = new BigNumber(balance).dividedBy(10 ** 18).toFixed();
     } catch (err) {
       console.log('Err reading eth balance: ', err);
     }
+    console.log('bl', balanceNormalized);
     return { ...token, balance, balanceNormalized };
   }
   try {
@@ -104,6 +105,11 @@ export function* readBalances() {
     const yUsdVault = _.find(balances, {
       address: '0x5dbcF33D8c2E976c6b560249878e6F1491Bca25c'.toLowerCase(),
     });
+    const selectedToken = yield r.select(s.selectSelectedToken());
+    const newSelectedToken = _.find(balances, {
+      address: selectedToken.address,
+    });
+    yield r.put(a.selectToken(newSelectedToken));
     yield r.put(a.selectVault(yUsdVault));
     yield r.put(a.tokenBalancesLoaded(balances));
   } catch (err) {
