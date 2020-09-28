@@ -30,7 +30,10 @@ const appReducer = (state = initialState, action) =>
         tokensToUpdate,
         lowercaseAddress,
       );
+
+      const selectedTokenAddress = _.get(state, 'selectedToken.address');
       const updateToken = newToken => {
+        const tokenIsSelected = newToken.address === selectedTokenAddress;
         const oldToken = _.find(oldTokens, { address: newToken.address }) || {};
         const updatedToken = _.clone(oldToken);
         _.each(tokenKeys, key => {
@@ -42,6 +45,9 @@ const appReducer = (state = initialState, action) =>
           }
           updatedToken[key] = newVal;
         });
+        if (tokenIsSelected) {
+          draft.selectedToken = updatedToken;
+        }
         return updatedToken;
       };
       const updatedTokens = _.map(tokensToUpdateLowercaseAddress, updateToken);

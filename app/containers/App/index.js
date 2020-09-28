@@ -14,6 +14,7 @@ import selectedTokenSaga from 'containers/App/sagas/selectedTokenSaga';
 import exchangeSaga from 'containers/App/sagas/exchangeSaga';
 import reducer from 'containers/App/reducer';
 import * as a from 'containers/App/actions';
+import Confetti from 'components/Confetti';
 
 export default function App() {
   useInjectReducer({ key: 'app', reducer });
@@ -32,6 +33,7 @@ export default function App() {
   useEffect(init, []);
   return (
     <React.Fragment>
+      <Confetti />
       <ConnectionProvider>
         <Dashboard />
       </ConnectionProvider>
