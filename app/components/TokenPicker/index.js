@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import TokenPickerModal from 'components/TokenPickerModal';
 import TokenIconAndName from 'components/TokenIconAndName';
@@ -44,37 +44,45 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
-  width: 350px;
 `;
 
 export default function(props) {
-  const { immutable, selectedToken: selectedTokenOriginal } = props;
+  const { deposit, selectedToken: selectedTokenOriginal } = props;
   const [showTokenPickerModal, setShowTokenPickerModal] = useState(false);
   const [amount, setAmount] = useState('0.00');
   const openTokenPickerModal = () => setShowTokenPickerModal(true);
   const closeTokenPickerModal = () => setShowTokenPickerModal(false);
   const dispatch = useDispatch();
   const selectedVault = useSelector(s.selectSelectedVault());
-  const loadingBalances = useSelector(s.select('loading')).balances;
-
+  const depositAmountNormalized = useSelector(
+    s.select('depositAmountNormalized'),
+  );
+  const withdrawalAmountNormalized = useSelector(
+    s.select('withdrawalAmountNormalized'),
+  );
   let selectedToken = selectedTokenOriginal;
-  if (immutable) {
+  if (!deposit) {
     selectedToken = selectedVault;
   }
+  const updatePrice = () => {
+    if (deposit) {
+      //    setAmount(depositAmountNormalized);
+    } else {
+      //  setAmount(withdrawalAmountNormalized);
+    }
+  };
+  useEffect(updatePrice, [depositAmountNormalized, withdrawalAmountNormalized]);
   const { symbol, balance, balanceNormalized, decimals } = selectedToken;
 
   const clickToken = () => {
-    if (!immutable) {
+    if (deposit) {
       openTokenPickerModal();
     }
   };
 
   let truncatedBalance;
-  if (loadingBalances) {
-    truncatedBalance = 'Loading...';
-  } else if (balance) {
+  if (balance) {
     truncatedBalance = `${balanceTransform(balance, decimals, 4)} ${symbol}`;
   } else {
     truncatedBalance = `0.00 ${symbol}`;
@@ -90,17 +98,33 @@ export default function(props) {
       .toFixed(8);
 
     setAmount(newAmountNormalized);
-    if (immutable) {
-      dispatch(a.setWithdrawalAmount(newAmount));
+    if (deposit) {
+      //dispatch(a.setDepositAmount(newAmount));
     } else {
-      dispatch(a.setDepositAmount(newAmount));
+      //dispatch(a.setWithdrawalAmount(newAmount));
     }
   };
 
+  const setAmountAndDispatch = newAmountNormalized => {
+    if (!newAmountNormalized) {
+      setAmount('');
+      return;
+    }
+    const newAmount = new BigNumber(newAmountNormalized)
+      .times(10 ** 18)
+      .toFixed(0);
+    setAmount(newAmountNormalized);
+    if (deposit) {
+      //  dispatch(a.setDepositAmount(newAmount));
+    } else {
+      // dispatch(a.setWithdrawalAmount(newAmount));
+    }
+    setAmount(newAmountNormalized);
+  };
   return (
     <Wrapper>
       <TokenIconAndName
-        immutable={immutable}
+        deposit={deposit}
         token={selectedToken}
         onClick={clickToken}
       />
@@ -112,7 +136,7 @@ export default function(props) {
           placeholder="0.00"
           value={amount}
           type="text"
-          onChange={evt => setAmount(evt.target.value)}
+          onChange={evt => setAmountAndDispatch(evt.target.value)}
         />
         <AmountButtons>
           <AmountButton onClick={() => setAmountWithPercent(0)}>

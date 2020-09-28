@@ -56,7 +56,6 @@ function* fetchAccountBalance(token, web3, account, library) {
     } catch (err) {
       console.log('Err reading eth balance: ', err);
     }
-    console.log('bl', balanceNormalized);
     return { ...token, balance, balanceNormalized };
   }
   try {

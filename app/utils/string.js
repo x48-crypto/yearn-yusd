@@ -21,7 +21,7 @@ export const chainNameFromHexId = chainIdAsHex => {
 };
 
 export const roundFloat = (val, digits) => {
-  if (Number.isNaN(val)) {
+  if (Number.isNaN(val) || !val) {
     return '0.00';
   }
   return parseFloat(val)

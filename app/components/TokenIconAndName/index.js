@@ -7,8 +7,8 @@ const Wrapper = styled.div`
   font-weight: bold;
   text-align: center;
   &:hover {
-    cursor: ${props => (props.immutable ? 'default' : 'pointer')};
-    background-color: ${props => (props.immutable ? 'transparent' : '#f0f5f9')};
+    cursor: ${props => (props.deposit ? 'pointer' : 'default')};
+    background-color: ${props => (props.deposit ? '#f0f5f9' : 'transparent')};
   }
   font-size: 30px;
   width: 220px;
@@ -55,12 +55,12 @@ const Value = styled.div`
 `;
 
 export default function Component(props) {
-  const { onClick, token, immutable } = props;
+  const { onClick, token, deposit } = props;
   const symbol = _.get(token, 'symbol');
   const address = _.get(token, 'address');
   const loading = !symbol;
   let dropdown;
-  if (!immutable && !loading) {
+  if (deposit && !loading) {
     dropdown = (
       <Dropdown>
         <img alt="Dropdown" src={DropdownIcon} />
@@ -69,7 +69,7 @@ export default function Component(props) {
   }
 
   return (
-    <Wrapper immutable={immutable} onClick={onClick}>
+    <Wrapper deposit={deposit} onClick={onClick}>
       <Label>
         <LabelWrapper>
           <Symbol>{symbol || 'Loading'}</Symbol>

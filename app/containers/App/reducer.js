@@ -1,5 +1,6 @@
 import produce from 'immer';
 import { getVaultWithAlias } from 'utils/vaults';
+import BigNumber from 'bignumber.js';
 import * as c from './constants';
 
 // The initial state of the App
@@ -9,6 +10,7 @@ export const initialState = {
   ready: false,
   loading: {
     balances: true,
+    exchangeRate: true,
   },
   userTokens: [],
   tokens: [],
@@ -79,17 +81,44 @@ const appReducer = (state = initialState, action) =>
       }
       case c.SET_TOKEN:
         draft.selectedToken = action.token;
+        draft.depositAmount = '0.00';
+        draft.withdrawalAmount = '0.00';
+        draft.loading.exchangeRate = true;
         break;
-      case c.SET_VAULT:
+      case c.SET_EXCHANGE_RATE:
+        draft.exchangeRate = action.rate;
+        draft.loading.exchangeRate = false;
+        break;
+      case c.SET_VAULT: {
         const vaultWithAlias = getVaultWithAlias(action.vault);
         draft.selectedVault = vaultWithAlias;
         break;
-      case c.SET_DEPOSIT_AMOUNT:
+      }
+      case c.SET_DEPOSIT_AMOUNT: {
         draft.depositAmount = action.amount;
+        const exchangeRate = state.exchangeRate;
+        const depositAmountNormalized = new BigNumber(action.amount)
+          .dividedBy(10 ** 18)
+          .toFixed(8);
+        draft.depositAmountNormalized = depositAmountNormalized;
+        const withdrawalAmount = new BigNumber(action.amount)
+          .dividedBy(exchangeRate)
+          .toFixed();
+        const withdrawalAmountNormalized = new BigNumber(withdrawalAmount)
+          .dividedBy(10 ** 18)
+          .toFixed(8);
+        draft.withdrawalAmount = withdrawalAmount;
+        draft.withdrawalAmountNormalized = withdrawalAmountNormalized;
         break;
-      case c.SET_WITHDRAWAL_AMOUNT:
+      }
+      case c.SET_WITHDRAWAL_AMOUNT: {
         draft.withdrawalAmount = action.amount;
+        const withdrawalAmountNormalized = new BigNumber(action.amount)
+          .dividedBy(10 ** 18)
+          .toFixed(8);
+        draft.withdrawalAmountNormalized = withdrawalAmountNormalized;
         break;
+      }
       case c.VAULTS_LOADED:
         draft.vaults = action.vaults;
         break;

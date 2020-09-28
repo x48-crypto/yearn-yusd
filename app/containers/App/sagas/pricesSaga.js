@@ -5,55 +5,35 @@ import * as s from '../selectors';
 import * as a from '../actions';
 import * as c from '../constants';
 
-export function* updatePrices(action) {
-  const newTokens = action.tokens;
-  const oldTokens = yield r.select(s.select('userTokens'));
-  const tokensToUpdate = oldTokens;
-  const nbrNewTokens = _.size(newTokens);
-  if (nbrNewTokens > 0) {
-    const insertTokenIfMissing = token => {
-      const foundToken = _.find(
-        oldTokens,
-        oldToken =>
-          oldToken.address.toLowerCase() === token.address.toLowerCase(),
-      );
-      if (!foundToken) {
-        tokensToUpdate.push(token);
-      }
-    };
-    _.each(newTokens, insertTokenIfMissing);
-  }
-
+function* injectPrice(token, prices) {
   const tokens = yield r.select(s.select('tokens'));
-  const injectPrice = (token, prices) => {
-    const priceUsd = _.get(prices, `${token.address}.usd`);
-    const { balanceNormalized } = token;
-    let balanceUsd;
-    if (balanceNormalized && priceUsd) {
-      balanceUsd = new BigNumber(balanceNormalized).times(priceUsd).toNumber();
-    }
-    return { priceUsd, balanceUsd, address: token.address };
-  };
+  let priceUsd = _.get(prices, `${token.address}.usd`);
+  const fullToken = _.find(tokens, { address: token.address });
+  const tokenIsEthereum = token.address === 'ethereum';
+  if (tokenIsEthereum) {
+    const ethPriceUrl =
+      'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd';
+    const ethPriceResp = yield r.call(request, ethPriceUrl);
+    priceUsd = ethPriceResp.ethereum.usd;
+  }
+  const { balanceNormalized } = fullToken;
+  let balanceUsd;
+  if (balanceNormalized && priceUsd) {
+    balanceUsd = new BigNumber(balanceNormalized).times(priceUsd).toNumber();
+  }
+  return { ...fullToken, priceUsd, balanceUsd, address: token.address };
+}
 
+export function* updatePrices(action) {
+  const tokensToUpdate = action.tokens;
   try {
     const tokenAddresses = _.map(tokensToUpdate, token => token.address);
     const pricesUrl = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddresses},0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8&vs_currencies=usd`;
-    const ethPriceUrl =
-      'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd';
-
     const prices = yield r.call(request, pricesUrl);
-    const ethPrice = yield r.call(request, ethPriceUrl);
-
-    const tokensWithPrice = _.map(
-      tokens,
-      token => injectPrice(token, prices),
-      [],
+    const tokensWithPrice = yield r.all(
+      _.map(tokensToUpdate, token => injectPrice(token, prices), []),
     );
-    const ethToken = _.find(tokens, { symbol: 'ETH' });
-    const ethTokenWithPrice = injectPrice(ethToken, ethPrice);
-    const tokensWithAllPrices = [...tokensWithPrice, ethTokenWithPrice];
-
-    yield r.put(a.pricesLoaded(tokensWithAllPrices));
+    yield r.put(a.pricesLoaded(tokensWithPrice));
   } catch (err) {
     console.log('Error reading prices', err);
   }
@@ -64,7 +44,9 @@ export function* startLoadingPrices() {
 }
 
 export function* updateBalancePrices() {
-  yield r.put(a.updatePrices());
+  console.log('get ballp');
+  const userTokens = yield r.select(s.select('userTokens'));
+  yield r.put(a.updatePrices(userTokens));
 }
 
 export default function* initialize() {
