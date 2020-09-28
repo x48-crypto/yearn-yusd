@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import Button from 'components/Button';
-import TokenPicker from 'components/TokenPicker';
+import BigNumber from 'bignumber.js';
 import { useSelector } from 'react-redux';
 import * as s from 'containers/App/selectors';
 
@@ -14,10 +13,6 @@ const Wrapper = styled.div`
   background-color: #eef3f7;
   width: 100%;
   padding: 16px 39px;
-`;
-const Middle = styled.div`
-  display: flex;
-  flex-direction: column;
 `;
 
 const Table = styled.table`
@@ -46,6 +41,17 @@ const Td = styled.td`
 `;
 
 export default function() {
+  const exchangeRate = useSelector(s.select('exchangeRate'));
+  const selectedToken = useSelector(s.selectSelectedToken());
+  const selectedVault = useSelector(s.selectSelectedVault());
+  const tokenSymbol = selectedToken.symbol;
+  const vaultSymbol = selectedVault.symbol;
+  let exchangeText;
+  if (exchangeRate) {
+    const exchangeVal = new BigNumber(1).times(exchangeRate).toPrecision(5);
+    exchangeText = `1 ${tokenSymbol} = ${exchangeVal} ${vaultSymbol}`;
+  }
+
   return (
     <Wrapper>
       <Table>
@@ -58,7 +64,7 @@ export default function() {
           </Tr>
           <Tr>
             <Td>Exchange Rate</Td>
-            <Td>1 ETH = 1.434 DAI</Td>
+            <Td>{exchangeText}</Td>
           </Tr>
           <Tr>
             <Td>Slippage Tolergance </Td>
