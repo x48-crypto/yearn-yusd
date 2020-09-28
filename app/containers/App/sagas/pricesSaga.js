@@ -51,5 +51,5 @@ export function* updateBalancePrices() {
 
 export default function* initialize() {
   yield r.takeLatest(c.TOKEN_BALANCES_LOADED, updateBalancePrices);
-  yield r.takeLatest(c.UPDATE_PRICES, updatePrices);
+  yield r.takeEvery(c.UPDATE_PRICES, updatePrices);
 }

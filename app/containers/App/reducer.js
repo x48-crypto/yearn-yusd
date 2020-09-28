@@ -61,6 +61,38 @@ const appReducer = (state = initialState, action) =>
       draft.tokens = newTokens;
     };
 
+    const setDepositWithdrawButtonStatus = () => {
+      const tokenBalance = _.get(draft, 'selectedToken.balance', 0);
+      const vaultBalance = _.get(draft, 'selectedVault.balance', 0);
+      if (
+        draft.depositAmount * 1 > tokenBalance ||
+        draft.depositAmount === '0' ||
+        !draft.depositAmount
+      ) {
+        draft.depositDisabled = true;
+      } else {
+        draft.depositDisabled = false;
+      }
+      if (
+        draft.withdrawalAmount * 1 > vaultBalance ||
+        draft.withdrawalAmount === '0' ||
+        !draft.withdrawalAmount
+      ) {
+        draft.withdrawalDisabled = true;
+      } else {
+        draft.withdrawalDisabled = false;
+      }
+    };
+
+    const setTransactionValue = () => {
+      const tokenPrice = _.get(state, 'selectedToken.priceUsd', 0);
+      const { depositAmountNormalized } = draft;
+      const transactionValue = new BigNumber(depositAmountNormalized)
+        .times(tokenPrice)
+        .toFixed(2);
+      draft.transactionValue = transactionValue;
+    };
+
     switch (action.type) {
       case c.CONNECTION_CONNECTED:
         draft.account = action.account;
@@ -79,12 +111,13 @@ const appReducer = (state = initialState, action) =>
         updateTokens(action.prices, ['priceUsd', 'balanceUsd']);
         break;
       }
-      case c.SET_TOKEN:
-        draft.selectedToken = action.token;
-        draft.depositAmount = '0.00';
-        draft.withdrawalAmount = '0.00';
+      case c.SET_TOKEN: {
+        const { token } = action;
+        draft.selectedToken = token;
         draft.loading.exchangeRate = true;
+        setDepositWithdrawButtonStatus();
         break;
+      }
       case c.SET_EXCHANGE_RATE:
         draft.exchangeRate = action.rate;
         draft.loading.exchangeRate = false;
@@ -95,28 +128,93 @@ const appReducer = (state = initialState, action) =>
         break;
       }
       case c.SET_DEPOSIT_AMOUNT: {
-        draft.depositAmount = action.amount;
-        const exchangeRate = state.exchangeRate;
-        const depositAmountNormalized = new BigNumber(action.amount)
-          .dividedBy(10 ** 18)
+        // Empty amount
+        if (!action.amount) {
+          draft.withdrawalAmount = '0';
+          draft.depositAmount = '0';
+          draft.withdrawalAmountNormalized = '';
+          draft.depositAmountNormalized = '';
+          break;
+        }
+        const decimals = _.get(state, 'selectedToken.decimals', 18);
+        const { exchangeRate } = state;
+
+        // Deposit amount normalized
+        const depositAmountNormalized = action.amount;
+
+        // Deposit amount
+        const depositAmount = new BigNumber(depositAmountNormalized)
+          .times(10 ** decimals)
+          .toFixed(0);
+
+        // Withdrawal amount
+        const withdrawalAmount = new BigNumber(depositAmount)
+          .times(exchangeRate)
+          .toFixed(0);
+
+        // Withdrawal amount normalized
+        const withdrawalAmountNormalized = new BigNumber(
+          depositAmountNormalized,
+        )
+          .times(exchangeRate)
           .toFixed(8);
+
+        // Set amounts
+        draft.depositAmount = depositAmount;
         draft.depositAmountNormalized = depositAmountNormalized;
-        const withdrawalAmount = new BigNumber(action.amount)
-          .dividedBy(exchangeRate)
-          .toFixed();
-        const withdrawalAmountNormalized = new BigNumber(withdrawalAmount)
-          .dividedBy(10 ** 18)
-          .toFixed(8);
-        draft.withdrawalAmount = withdrawalAmount;
         draft.withdrawalAmountNormalized = withdrawalAmountNormalized;
+        draft.withdrawalAmount = withdrawalAmount;
+
+        // Set deposit/withdraw button disabled status
+        setDepositWithdrawButtonStatus();
+
+        // Set transaction value
+        setTransactionValue();
         break;
       }
       case c.SET_WITHDRAWAL_AMOUNT: {
-        draft.withdrawalAmount = action.amount;
-        const withdrawalAmountNormalized = new BigNumber(action.amount)
-          .dividedBy(10 ** 18)
+        // Empty amount
+        if (!action.amount) {
+          draft.withdrawalAmount = '0';
+          draft.depositAmount = '0';
+          draft.withdrawalAmountNormalized = '';
+          draft.depositAmountNormalized = '';
+          break;
+        }
+        const { exchangeRate } = state;
+        const decimals = _.get(state, 'selectedVault.decimals', 18);
+
+        // Withdrawl amount normalized
+        const withdrawalAmountNormalized = action.amount;
+
+        // Withdrawal amount
+        const withdrawalAmount = new BigNumber(withdrawalAmountNormalized)
+          .times(10 ** decimals)
+          .toFixed(0);
+
+        // Deposit amount
+        const depositAmount = new BigNumber(withdrawalAmount)
+          .dividedBy(exchangeRate)
+          .toFixed(0);
+
+        // Deposit amount normalized
+        const depositAmountNormalized = new BigNumber(
+          withdrawalAmountNormalized,
+        )
+          .dividedBy(exchangeRate)
           .toFixed(8);
+
+        // Set amounts
+        draft.withdrawalAmount = withdrawalAmount;
         draft.withdrawalAmountNormalized = withdrawalAmountNormalized;
+        draft.depositAmountNormalized = depositAmountNormalized;
+        draft.depositAmount = depositAmount;
+
+        // Set deposit/withdraw button disabled status
+        setDepositWithdrawButtonStatus();
+
+        // Set transaction value
+        setTransactionValue();
         break;
       }
       case c.VAULTS_LOADED:

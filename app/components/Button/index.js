@@ -14,17 +14,20 @@ const Wrapper = styled.button`
   &:focus {
     outline: 0 !important;
   }
-  &:hover {
+  &:not(:disabled):hover {
     background-color: #2f80ed;
     color: #fff;
   }
   font-size: 17px;
+  &:disabled {
+    opacity: 0.5;
+  }
 `;
 
 export default function ConnectButton(props) {
-  const { onClick } = props;
+  const { onClick, disabled } = props;
   return (
-    <Wrapper type="button" onClick={onClick}>
+    <Wrapper type="button" disabled={disabled} onClick={onClick}>
       {props.children}
     </Wrapper>
   );

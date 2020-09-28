@@ -4,20 +4,37 @@ import Button from 'components/Button';
 import TokenPicker from 'components/TokenPicker';
 import { useSelector } from 'react-redux';
 import ExchangeDetails from 'components/ExchangeDetails';
+import LoaderImg from 'images/loaderImg.gif';
 import * as s from 'containers/App/selectors';
 
 const Wrapper = styled.div`
   display: flex;
   width: 755px;
   flex-direction: column;
+  pointer-events: ${props => (props.disabled ? 'none' : 'inherit')};
 `;
 
-const Left = styled.div``;
-const Right = styled.div``;
+const Left = styled.div`
+  opacity: ${props => (props.disabled ? '.3' : '1')};
+`;
+
+const Right = styled.div`
+  opacity: ${props => (props.disabled ? '.3' : '1')};
+`;
+
+const ExchangeDetailsWrapper = styled.div`
+  opacity: ${props => (props.disabled ? '.3' : '1')};
+`;
+
 const Middle = styled.div`
   display: flex;
   flex-direction: column;
   width: 135px;
+  align-items: center;
+`;
+
+const Loader = styled.img`
+  width: 80px;
 `;
 
 const Top = styled.div`
@@ -32,21 +49,36 @@ const Top = styled.div`
 
 export default function() {
   const selectedToken = useSelector(s.selectSelectedToken());
+  const depositDisabled = useSelector(s.select('depositDisabled'));
+  const withdrawalDisabled = useSelector(s.select('withdrawalDisabled'));
+  const loadingExchangeRate = useSelector(s.select('loading')).exchangeRate;
+  let buttons;
+
+  if (loadingExchangeRate) {
+    buttons = <Loader src={LoaderImg} />;
+  } else {
+    buttons = (
+      <React.Fragment>
+        {' '}
+        <Button disabled={depositDisabled}>Deposit</Button>
+        <Button disabled={withdrawalDisabled}>Withdraw</Button>
+      </React.Fragment>
+    );
+  }
   return (
-    <Wrapper>
+    <Wrapper disabled={loadingExchangeRate}>
       <Top>
-        <Left>
+        <Left disabled={loadingExchangeRate}>
           <TokenPicker deposit selectedToken={selectedToken} />
         </Left>
-        <Middle>
-          <Button>Deposit</Button>
-          <Button>Withdraw</Button>
-        </Middle>
-        <Right>
+        <Middle>{buttons}</Middle>
+        <Right disabled={loadingExchangeRate}>
           <TokenPicker token={selectedToken} />
         </Right>
       </Top>
-      <ExchangeDetails />
+      <ExchangeDetailsWrapper disabled={loadingExchangeRate}>
+        <ExchangeDetails />
+      </ExchangeDetailsWrapper>
     </Wrapper>
   );
 }

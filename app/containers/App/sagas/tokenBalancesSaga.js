@@ -110,6 +110,8 @@ export function* readBalances() {
     });
     if (newSelectedToken) {
       yield r.put(a.setToken(newSelectedToken));
+    } else {
+      yield r.put(a.setToken(selectedToken));
     }
     yield r.put(a.setVault(yUsdVault));
     yield r.put(a.tokenBalancesLoaded(balances));

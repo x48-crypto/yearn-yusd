@@ -21,8 +21,12 @@ export function* setVault(action) {
   const { vault } = action;
 }
 
-export function* setToken(action) {
-  const { token } = action;
+export function* setMaxDeposit(action) {
+  const selectedToken = yield r.select(s.selectSelectedToken());
+  yield r.put(a.setDepositAmount(selectedToken.balanceNormalized));
+}
+
+export function* setToken() {
   yield getCurrentExchangeRate();
 }
 
@@ -39,13 +43,18 @@ export function* pricesLoaded(action) {
   const { prices } = action;
   const selectedToken = yield r.select(s.selectSelectedToken());
   const selectedVault = yield r.select(s.selectSelectedVault());
-  const selectedTokenPrice = _.find(prices, { address: selectedToken.address })
-    .priceUsd;
-  const selectedVaultPrice = _.find(prices, { address: selectedVault.address })
-    .priceUsd;
+
+  const tokenPrice = _.find(
+    prices,
+    token =>
+      token.address.toLowerCase() === selectedToken.address.toLowerCase(),
+  );
+  const vaultPrice = _.find(prices, { address: selectedVault.address });
 
   // Update token pair exchange rate
-  if (selectedTokenPrice && selectedVaultPrice) {
+  if (tokenPrice && vaultPrice) {
+    const selectedTokenPrice = tokenPrice.priceUsd;
+    const selectedVaultPrice = vaultPrice.priceUsd;
     const ratio = new BigNumber(selectedTokenPrice)
       .dividedBy(selectedVaultPrice)
       .toFixed();
@@ -59,4 +68,5 @@ export default function* initialize() {
   yield r.takeLatest(c.SET_VAULT, setVault);
   yield r.takeLatest(c.SET_TOKEN, setToken);
   yield r.takeLatest(c.PRICES_LOADED, pricesLoaded);
+  yield r.takeLatest(c.SET_EXCHANGE_RATE, setMaxDeposit);
 }

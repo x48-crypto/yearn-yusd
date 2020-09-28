@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
 import { useSelector } from 'react-redux';
+import { currencyTransform } from 'utils/string';
 import * as s from 'containers/App/selectors';
 
 const Wrapper = styled.div`
@@ -44,6 +45,7 @@ export default function() {
   const exchangeRate = useSelector(s.select('exchangeRate'));
   const selectedToken = useSelector(s.selectSelectedToken());
   const selectedVault = useSelector(s.selectSelectedVault());
+  const transactionValue = useSelector(s.select('transactionValue')) || '0.00';
   const tokenSymbol = selectedToken.symbol;
   const vaultSymbol = selectedVault.symbol;
   let exchangeText;
@@ -59,7 +61,7 @@ export default function() {
           <Tr>
             <Td>Transaction Value</Td>
             <Td>
-              <b>$23,123.05</b>
+              <b>${transactionValue}</b>
             </Td>
           </Tr>
           <Tr>

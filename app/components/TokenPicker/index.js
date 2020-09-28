@@ -50,29 +50,41 @@ const Wrapper = styled.div`
 export default function(props) {
   const { deposit, selectedToken: selectedTokenOriginal } = props;
   const [showTokenPickerModal, setShowTokenPickerModal] = useState(false);
-  const [amount, setAmount] = useState('0.00');
   const openTokenPickerModal = () => setShowTokenPickerModal(true);
   const closeTokenPickerModal = () => setShowTokenPickerModal(false);
   const dispatch = useDispatch();
   const selectedVault = useSelector(s.selectSelectedVault());
+
   const depositAmountNormalized = useSelector(
     s.select('depositAmountNormalized'),
   );
   const withdrawalAmountNormalized = useSelector(
     s.select('withdrawalAmountNormalized'),
   );
-  let selectedToken = selectedTokenOriginal;
-  if (!deposit) {
+
+  let selectedToken;
+  let amount;
+  if (deposit) {
+    selectedToken = selectedTokenOriginal;
+    amount = depositAmountNormalized || '0.00';
+  } else {
     selectedToken = selectedVault;
+    amount = withdrawalAmountNormalized || '0.00';
   }
-  const updatePrice = () => {
-    if (deposit) {
-      //    setAmount(depositAmountNormalized);
-    } else {
-      //  setAmount(withdrawalAmountNormalized);
-    }
-  };
-  useEffect(updatePrice, [depositAmountNormalized, withdrawalAmountNormalized]);
+  // const updateDepositAmount = () => {
+  //   console.log('upd');
+  //   if (deposit) {
+  //     // setAmount(depositAmountNormalized);
+  //   }
+  // };
+  // const updateWithdrawalAmount = () => {
+  //   console.log('zog');
+  //   if (!deposit) {
+  //     setAmount();
+  //   }
+  // };
+  // useEffect(updateDepositAmount, [withdrawalAmount]);
+  // useEffect(updateWithdrawalAmount, [depositAmount]);
   const { symbol, balance, balanceNormalized, decimals } = selectedToken;
 
   const clickToken = () => {
@@ -85,42 +97,33 @@ export default function(props) {
   if (balance) {
     truncatedBalance = `${balanceTransform(balance, decimals, 4)} ${symbol}`;
   } else {
-    truncatedBalance = `0.00 ${symbol}`;
+    truncatedBalance = `0.0 ${symbol}`;
   }
 
   const setAmountWithPercent = percentage => {
     if (!balance) {
+      dispatch(a.setDepositAmount('0.00'));
       return;
     }
-    const newAmount = new BigNumber(balance).times(percentage).toFixed(0);
     const newAmountNormalized = new BigNumber(balanceNormalized)
       .times(percentage)
-      .toFixed(8);
+      .toFixed();
 
-    setAmount(newAmountNormalized);
     if (deposit) {
-      //dispatch(a.setDepositAmount(newAmount));
+      dispatch(a.setDepositAmount(newAmountNormalized));
     } else {
-      //dispatch(a.setWithdrawalAmount(newAmount));
+      dispatch(a.setWithdrawalAmount(newAmountNormalized));
     }
   };
 
   const setAmountAndDispatch = newAmountNormalized => {
-    if (!newAmountNormalized) {
-      setAmount('');
-      return;
-    }
-    const newAmount = new BigNumber(newAmountNormalized)
-      .times(10 ** 18)
-      .toFixed(0);
-    setAmount(newAmountNormalized);
     if (deposit) {
-      //  dispatch(a.setDepositAmount(newAmount));
+      dispatch(a.setDepositAmount(newAmountNormalized));
     } else {
-      // dispatch(a.setWithdrawalAmount(newAmount));
+      dispatch(a.setWithdrawalAmount(newAmountNormalized));
     }
-    setAmount(newAmountNormalized);
   };
+
   return (
     <Wrapper>
       <TokenIconAndName
