@@ -44,7 +44,6 @@ export function* startLoadingPrices() {
 }
 
 export function* updateBalancePrices() {
-  console.log('get ballp');
   const userTokens = yield r.select(s.select('userTokens'));
   yield r.put(a.updatePrices(userTokens));
 }

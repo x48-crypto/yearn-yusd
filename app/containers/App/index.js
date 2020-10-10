@@ -12,9 +12,11 @@ import tokenListSaga from 'containers/App/sagas/tokenListSaga';
 import tokenBalancesSaga from 'containers/App/sagas/tokenBalancesSaga';
 import selectedTokenSaga from 'containers/App/sagas/selectedTokenSaga';
 import exchangeSaga from 'containers/App/sagas/exchangeSaga';
+import confettiSaga from 'containers/App/sagas/confettiSaga';
 import reducer from 'containers/App/reducer';
 import * as a from 'containers/App/actions';
 import Confetti from 'components/Confetti';
+import Notify from 'bnc-notify';
 
 export default function App() {
   useInjectReducer({ key: 'app', reducer });
@@ -25,6 +27,12 @@ export default function App() {
   useInjectSaga({ key: 'tokenBalancesSaga', saga: tokenBalancesSaga });
   useInjectSaga({ key: 'selectedTokenSaga', saga: selectedTokenSaga });
   useInjectSaga({ key: 'exchangeSaga', saga: exchangeSaga });
+  useInjectSaga({ key: 'confettiSaga', saga: confettiSaga });
+
+  const notifyInstance = Notify({
+    dappId: '9081ee55-aa99-4da1-88c6-0de7a2e2308a',
+    networkId: 1,
+  });
 
   const dispatch = useDispatch();
   const init = () => {

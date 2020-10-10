@@ -1,6 +1,7 @@
 import produce from 'immer';
 import { getVaultWithAlias } from 'utils/vaults';
 import BigNumber from 'bignumber.js';
+import Web3 from 'web3';
 import * as c from './constants';
 
 // The initial state of the App
@@ -14,6 +15,7 @@ export const initialState = {
   },
   userTokens: [],
   tokens: [],
+  runConfetti: false,
 };
 
 /* eslint-disable default-case, no-param-reassign */
@@ -100,19 +102,23 @@ const appReducer = (state = initialState, action) =>
     };
 
     switch (action.type) {
-      case c.CONNECTION_CONNECTED:
+      case c.CONNECTION_CONNECTED: {
         draft.account = action.account;
         draft.connector = action.connector;
         draft.library = action.library;
         draft.chainId = action.chainId;
         draft.connected = true;
         draft.ready = false;
+        const web3 = new Web3(action.library.provider);
+        draft.web3 = web3;
         break;
-      case c.CONNECTION_UPDATED:
+      }
+      case c.CONNECTION_UPDATED: {
         draft.library = action.library;
         draft.chainId = action.chainId;
         draft.connected = action.active;
         break;
+      }
       case c.PRICES_LOADED: {
         updateTokens(action.prices, ['priceUsd', 'balanceUsd']);
         break;
@@ -122,6 +128,11 @@ const appReducer = (state = initialState, action) =>
         draft.selectedToken = token;
         draft.loading.exchangeRate = true;
         setDepositWithdrawButtonStatus();
+        break;
+      }
+      case c.SELECTED_TOKEN_APPROVED: {
+        const { approved } = action;
+        draft.selectedTokenApproved = approved;
         break;
       }
       case c.SET_EXCHANGE_RATE:
@@ -248,7 +259,12 @@ const appReducer = (state = initialState, action) =>
         ]);
         draft.loading.balances = false;
         break;
-
+      case c.RUN_CONFETTI_START:
+        draft.runConfetti = true;
+        break;
+      case c.RUN_CONFETTI_STOP:
+        draft.runConfetti = false;
+        break;
       case c.SHOW_CONNECTOR_MODAL:
         draft.showConnectorModal = action.showModal;
         break;

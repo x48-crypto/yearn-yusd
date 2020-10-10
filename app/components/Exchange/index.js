@@ -2,9 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import Button from 'components/Button';
 import TokenPicker from 'components/TokenPicker';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import ExchangeDetails from 'components/ExchangeDetails';
 import LoaderImg from 'images/loaderImg.gif';
+import * as a from 'containers/App/actions';
 import * as s from 'containers/App/selectors';
 
 const Wrapper = styled.div`
@@ -52,16 +53,29 @@ export default function() {
   const depositDisabled = useSelector(s.select('depositDisabled'));
   const withdrawalDisabled = useSelector(s.select('withdrawalDisabled'));
   const loadingExchangeRate = useSelector(s.select('loading')).exchangeRate;
-  let buttons;
+  const dispatch = useDispatch();
 
+  const depositHandler = () => {
+    dispatch(a.deposit());
+  };
+
+  const withdrawHandler = () => {
+    dispatch(a.withdraw());
+  };
+
+  let buttons;
   if (loadingExchangeRate) {
     buttons = <Loader src={LoaderImg} />;
   } else {
     buttons = (
       <React.Fragment>
         {' '}
-        <Button disabled={depositDisabled}>Deposit</Button>
-        <Button disabled={withdrawalDisabled}>Withdraw</Button>
+        <Button disabled={depositDisabled} onClick={depositHandler}>
+          Deposit
+        </Button>
+        <Button disabled={withdrawalDisabled} onClick={withdrawHandler}>
+          Withdraw
+        </Button>
       </React.Fragment>
     );
   }

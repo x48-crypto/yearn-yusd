@@ -120,3 +120,34 @@ export function updatePrices(tokens) {
     tokens,
   };
 }
+
+export function runConfetti() {
+  return {
+    type: c.RUN_CONFETTI_START,
+  };
+}
+
+export function runConfettiStop() {
+  return {
+    type: c.RUN_CONFETTI_STOP,
+  };
+}
+
+export function selectedTokenApproved(approved) {
+  return {
+    type: c.SELECTED_TOKEN_APPROVED,
+    approved,
+  };
+}
+
+export function deposit() {
+  return {
+    type: c.DEPOSIT,
+  };
+}
+
+export function withdraw() {
+  return {
+    type: c.WITHDRAW,
+  };
+}
